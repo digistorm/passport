@@ -3,6 +3,7 @@
 namespace Laravel\Passport\Guards;
 
 use Exception;
+use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Auth\GuardHelpers;
@@ -297,12 +298,19 @@ class TokenGuard implements Guard
     {
         $jwt = $request->cookie(Passport::cookie());
 
-        return (array) JWT::decode(
-            Passport::$decryptsCookies
-                ? CookieValuePrefix::remove($this->encrypter->decrypt($jwt, Passport::$unserializesCookies))
-                : $jwt,
-            new Key(Passport::tokenEncryptionKey($this->encrypter), 'HS256')
-        );
+        try {
+            return (array) JWT::decode(
+                Passport::$decryptsCookies
+                    ? CookieValuePrefix::remove($this->encrypter->decrypt($jwt, Passport::$unserializesCookies))
+                    : $jwt,
+                new Key(Passport::tokenEncryptionKey($this->encrypter), 'HS256')
+            );
+        } catch (ExpiredException $exception) {
+            // If the token is expired, the payload is returned as this exception, so we can catch and ignore it.
+            // We want to allow no expiry.
+            // No need to override the base jwt package now.
+            return $exception->getPayload();
+        }
     }
 
     /**
