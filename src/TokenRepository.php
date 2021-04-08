@@ -63,7 +63,7 @@ class TokenRepository
         return $client->tokens()
                     ->whereUserId($user->getAuthIdentifier())
                     ->where('revoked', 0)
-                    ->where('expires_at', '>', Carbon::now())
+//                    ->where('expires_at', '>', Carbon::now()) // Disable expiry check
                     ->first();
     }
 
@@ -116,7 +116,7 @@ class TokenRepository
         return $client->tokens()
                       ->whereUserId($user->getAuthIdentifier())
                       ->where('revoked', 0)
-                      ->where('expires_at', '>', Carbon::now())
+//                      ->where('expires_at', '>', Carbon::now()) // Disable expiry check
                       ->latest('expires_at')
                       ->first();
     }
