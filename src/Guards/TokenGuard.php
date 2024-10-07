@@ -4,6 +4,7 @@ namespace Laravel\Passport\Guards;
 
 use Exception;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Guard;
@@ -143,7 +144,7 @@ class TokenGuard implements Guard
     /**
      * Get the client for the incoming request.
      *
-     * @return mixed
+     * @return \Laravel\Passport\Client|null
      */
     public function client()
     {
@@ -213,7 +214,7 @@ class TokenGuard implements Guard
      * Authenticate and get the incoming PSR-7 request via the Bearer token.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Psr\Http\Message\ServerRequestInterface
+     * @return \Psr\Http\Message\ServerRequestInterface|null
      */
     protected function getPsrRequestViaBearerToken($request)
     {
@@ -294,10 +295,13 @@ class TokenGuard implements Guard
      */
     protected function decodeJwtTokenCookie($request)
     {
+        $jwt = $request->cookie(Passport::cookie());
+
         return (array) JWT::decode(
-            CookieValuePrefix::remove($this->encrypter->decrypt($request->cookie(Passport::cookie()), Passport::$unserializesCookies)),
-            Passport::tokenEncryptionKey($this->encrypter),
-            ['HS256']
+            Passport::$decryptsCookies
+                ? CookieValuePrefix::remove($this->encrypter->decrypt($jwt, Passport::$unserializesCookies))
+                : $jwt,
+            new Key(Passport::tokenEncryptionKey($this->encrypter), 'HS256')
         );
     }
 

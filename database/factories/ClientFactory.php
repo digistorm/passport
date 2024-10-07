@@ -7,6 +7,9 @@ use Illuminate\Support\Str;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Laravel\Passport\Client>
+ */
 class ClientFactory extends Factory
 {
     /**
@@ -25,9 +28,9 @@ class ClientFactory extends Factory
     {
         return $this->ensurePrimaryKeyIsSet([
             'user_id' => null,
-            'name' => $this->faker->company,
+            'name' => $this->faker->company(),
             'secret' => Str::random(40),
-            'redirect' => $this->faker->url,
+            'redirect' => $this->faker->url(),
             'personal_access_client' => false,
             'password_client' => false,
             'revoked' => false,
